@@ -1,0 +1,88 @@
+-- ===== 1. Database & tables =====
+
+CREATE TABLE dbo.RegisteredVehicle(
+	RegisteredVehicleID INT IDENTITY PRIMARY KEY,
+	Type NVARCHAR (50) NOT NULL,
+	RegistrationNr NVARCHAR (10) NOT NULL,
+	Modal NVARCHAR (50) NOT NULL,
+	Weight DECIMAL (7, 2) NOT NULL
+);
+
+CREATE TABLE dbo.Contractor (
+	ContractorID INT IDENTITY PRIMARY KEY,
+	ContractorFirstName NVARCHAR (50) NOT NULL,
+	ContractorLastName NVARCHAR (50)NOT NULL,
+	ContractorEmail NVARCHAR (319)NOT NULL,
+	ContractorPhone INT NOT NULL,
+);
+
+CREATE TABLE dbo.ContractorHasRegisteredVehicle(
+	ContractorHasRegisteredVehicleID INT IDENTITY PRIMARY KEY,
+	ContractorID INT NOT NULL REFERENCES dbo.Contractor(ContractorID),
+	RegisteredVehicleID INT NOT NULL REFERENCES dbo.RegisteredVehicle(RegisteredVehicleID)
+);
+
+-- ===== 2. Seed data =====
+
+INSERT INTO dbo.RegisteredVehicle (Type, RegistrationNr, Modal, Weight)
+VALUES ('Sedan', 'XOQ-784', 'Toyota', 1.60),
+	   ('Hatchback', 'IKA-822', 'Volkswagen GTI', 1.53),
+	   ('Suv', 'WEP-755', 'toyota RAV4', 2.20),
+	   ('Minivan', 'NAH-594', 'Kia Carnival', 1.84),
+	   ('MPV', 'YGL-078', 'Peugeot Traveller', 2.13),
+	   ('Coupe', 'XAT-560', 'Aston Martin Vantage', 1.65),
+	   ('Crossover', 'TJZ-167', 'Chevrolet Trax', 1.96);
+
+-----------------------------------------------------------------------
+INSERT INTO dbo.Contractor (ContractorFirstName, ContractorLastName, ContractorEmail, ContractorPhone)
+VALUES ('Hale', 'Schroder', 'hschroder0@slate.com', '130-457-3530'),
+	   ('Bat', 'Dundendale', 'bdundendale1@storify.com', '451-403-5773'),
+	   ('Jessa', 'Hedney', 'jhedney2@seattletimes.com', '374-259-7417'),
+	   ('Clarette', 'Edge', 'cedge3@google.pl', '745-433-8804'),
+	   ('Luca', 'Breissan', 'lbreissan4@imageshack.us', '430-132-3824'),
+	   ('Gregorius', 'Annwyl', 'gannwyl5@sitemeter.com', '759-618-9846'),
+	   ('Ruthanne', 'Jakobsson', 'rjakobsson6@ibm.com', '224-139-7835'),
+	   ('Roch', 'Silver', 'rsilver7@globo.com', '316-512-1005'),
+	   ('Eugine', 'Lamblin', 'elamblin8@tiny.cc', '741-467-7421'),
+	   ('Lynsey', 'Gillhespy', 'lgillhespy9@whitehouse.gov', '502-608-2600');
+
+INSERT INTO dbo.ContractorHasRegisteredVehicle (RegisteredVehicleID,ContractorID)
+VALUES (1,3);
+
+-- ===== 3. Stored procedures =====
+
+CREATE PROCEDURE dbo.usp_GetVehiclesByContractor
+		@ContractorID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT  rv.RegisteredVehicleID,
+            rv.Type,
+            rv.RegistrationNr,
+            rv.Modal,
+            rv.Weight
+    FROM    dbo.ContractorHasRegisteredVehicle chrv
+    JOIN    dbo.RegisteredVehicle rv
+            ON rv.RegisteredVehicleID = chrv.RegisteredVehicleID
+    WHERE   chrv.ContractorID = @ContractorID
+    ORDER BY rv.Type, rv.RegistrationNr;
+END
+GO
+--------------------------------
+CREATE PROCEDURE dbo.usp_GetContractors
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT  ContractorID,
+            ContractorFirstName + ' ' + ContractorLastName AS ContractorName
+    FROM    dbo.Contractor
+    ORDER BY ContractorLastName, ContractorFirstName;
+END
+GO
+-- ===== 4. Test calls =====
+
+
+select * from dbo.RegisteredVehicle
+select * from dbo.Contractor
+select * from dbo.ContractorHasRegisteredVehicle
+exec dbo.usp_GetVehiclesByContractor   3
