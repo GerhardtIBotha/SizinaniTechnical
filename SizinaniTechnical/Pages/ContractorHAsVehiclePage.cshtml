@@ -1,0 +1,44 @@
+﻿@page
+@model ContractorHAsVehiclePage
+
+<h2>Contractor Vehicles</h2>
+
+<form method="get" class="mb-3">
+    <label asp-for="ContractorID" class="form-label">Contractor</label>
+    <select asp-for="ContractorID" asp-items="Model.Contractors"
+            class="form-select" onchange="this.form.submit()">
+        <option value="">-- Select a contractor --</option>
+    </select>
+</form>
+
+@if (Model.ContractorID.HasValue)
+{
+    if (Model.RegisteredVehicles.Any())
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Registration Number</th>
+                    <th>Model</th>
+                    <th>Weight (tons)</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var v in Model.RegisteredVehicles)
+            {
+                <tr>
+                    <td>@v.Type</td>
+                    <td>@v.RegistrationNr</td>
+                    <td>@v.Model</td>
+                    <td>@v.Weight.ToString("N2")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>This contractor has no registered vehicles.</p>
+    }
+}
